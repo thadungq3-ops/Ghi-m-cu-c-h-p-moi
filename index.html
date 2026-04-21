@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Chuyển đổi Văn bản Cuộc họp - Cơ quan Nhà nước</title>
+    <style>
+        :root {
+            --primary-color: #004a8c; /* Xanh đặc trưng hành chính */
+            --secondary-color: #d42020; /* Đỏ cờ */
+            --bg-color: #f4f7f9;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif; /* Font chữ chuẩn văn bản hành chính */
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 900px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--primary-color);
+        }
+
+        .header {
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .header h1 { color: var(--primary-color); font-size: 24px; margin: 5px; }
+        .header p { color: #555; font-weight: bold; }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-record { background-color: var(--secondary-color); color: white; }
+        .btn-record:hover { opacity: 0.8; }
+        .btn-stop { background-color: #666; color: white; display: none; }
+        .btn-save { background-color: var(--primary-color); color: white; }
+
+        #status {
+            text-align: center;
+            color: #d42020;
+            font-style: italic;
+            height: 20px;
+            margin-bottom: 10px;
+        }
+
+        .transcript-area {
+            border: 1px solid #ccc;
+            padding: 20px;
+            min-height: 400px;
+            line-height: 1.6;
+            font-size: 18px;
+            background: #fff;
+            white-space: pre-wrap;
+            text-align: justify;
+        }
+
+        .footer-note {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <p>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+        <p>Độc lập - Tự do - Hạnh phúc</p>
+        <hr width="30%">
+        <h1>HỆ THỐNG GHI ÂM & CHUYỂN VĂN BẢN HỌP</h1>
+    </div>
+
+    <div id="status"></div>
+
+    <div class="control-panel">
+        <button id="startBtn" class="btn-record" onclick="startRecognition()">BẮT ĐẦU GHI ÂM</button>
+        <button id="stopBtn" class="btn-stop" onclick="stopRecognition()">DỪNG GHI ÂM</button>
+        <button class="btn-save" onclick="saveDocument()">XUẤT BIÊN BẢN (.TXT)</button>
+    </div>
+
+    <div id="transcript" class="transcript-area" contenteditable="true">
+        (Nội dung cuộc họp sẽ được tự động hiển thị tại đây...)
+    </div>
+
+    <div class="footer-note">
+        * Lưu ý: Hệ thống sử dụng Web Speech API của trình duyệt. Dữ liệu cần được bảo mật theo quy định nội bộ.
+    </div>
+</div>
+
+<script>
+    let recognition;
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true; // Ghi âm liên tục
+        recognition.interimResults = true; // Hiển thị kết quả tạm thời
+        recognition.lang = 'vi-VN'; // Thiết lập tiếng Việt
+
+        recognition.onresult = (event) => {
+            let final_transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    final_transcript += event.results[i][0].transcript + '. ';
+                }
+            }
+            if (final_transcript) {
+                const area = document.getElementById('transcript');
+                if(area.innerText.includes("(Nội dung")) area.innerText = "";
+                area.innerText += final_transcript;
+            }
+        };
+
+        recognition.onstart = () => {
+            document.getElementById('status').innerText = "🔴 Hệ thống đang ghi âm và chuyển văn bản...";
+        };
+
+        recognition.onend = () => {
+            document.getElementById('status').innerText = "";
+        };
+    } else {
+        alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
+    }
+
+    function startRecognition() {
+        recognition.start();
+        document.getElementById('startBtn').style.display = 'none';
+        document.getElementById('stopBtn').style.display = 'inline-block';
+    }
+
+    function stopRecognition() {
+        recognition.stop();
+        document.getElementById('startBtn').style.display = 'inline-block';
+        document.getElementById('stopBtn').style.display = 'none';
+    }
+
+    function saveDocument() {
+        const text = document.getElementById('transcript').innerText;
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Bien_ban_cuoc_hop.txt';
+        link.click();
+    }
+</script>
+
+</body>
+</html>
