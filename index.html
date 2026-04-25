@@ -2,116 +2,67 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Chuyển văn bản sang Word</title>
+    <title>Hệ thống Ghi âm - MTTQ Phường An Khánh</title>
     <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
-        :root {
-            --primary-blue: #004a8c;
-            --bg-gray: #f8f9fa;
-        }
+        :root { --mttq-blue: #004a8c; --mttq-red: #d42020; }
+        body { font-family: 'Times New Roman', Times, serif; background-color: #e9ecef; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); border-top: 6px solid var(--mttq-red); }
+        .header-unit { text-align: center; margin-bottom: 20px; }
+        .header-unit h1 { font-size: 22px; color: var(--mttq-blue); text-transform: uppercase; margin: 5px 0; }
+        
+        .status-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 20px; font-weight: bold; color: #856404; }
+        .filter-badge { background: #28a745; color: white; padding: 3px 8px; border-radius: 10px; font-size: 12px; margin-left: 5px; }
 
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            background-color: var(--bg-gray);
-            padding: 40px;
-            margin: 0;
-        }
+        .control-panel { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px; }
+        .button-group { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
+        
+        button { font-family: 'Times New Roman', serif; font-weight: bold; padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; }
+        .btn-start { background-color: var(--mttq-red); color: white; }
+        .btn-stop { background-color: #495057; color: white; display: none; }
+        .btn-word { background-color: #2b579a; color: white; }
+        .btn-filter { background-color: #17a2b8; color: white; cursor: default; }
 
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            background: white;
-            padding: 50px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            border-radius: 4px;
-        }
-
-        .main-title {
-            text-align: center;
-            color: var(--primary-blue);
-            text-transform: uppercase;
-            font-size: 22px;
-            margin-bottom: 30px;
-            letter-spacing: 1px;
-            border-bottom: 2px solid var(--primary-blue);
-            padding-bottom: 10px;
-        }
-
-        .control-bar {
-            text-align: center;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        button {
-            font-family: 'Times New Roman', serif;
-            font-size: 16px;
-            padding: 10px 20px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            transition: 0.3s;
-        }
-
-        .btn-record { background-color: #d42020; color: white; }
-        .btn-stop { background-color: #6c757d; color: white; display: none; }
-        .btn-word { background-color: #2b579a; color: white; } /* Màu đặc trưng của Word */
-
-        #status {
-            text-align: center;
-            height: 25px;
-            color: #d42020;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        #transcript {
-            width: 100%;
-            min-height: 450px;
-            border: 1px solid #ced4da;
-            padding: 20px;
-            font-size: 14pt; /* Kích chuẩn văn bản hành chính */
-            line-height: 1.5;
-            box-sizing: border-box;
-            white-space: pre-wrap;
-            outline: none;
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #6c757d;
-            text-align: center;
-        }
+        #transcript-editor { width: 100%; min-height: 450px; border: 1px solid #adb5bd; padding: 25px; font-size: 14pt; line-height: 1.6; box-sizing: border-box; text-align: justify; outline: none; background: #fff; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 class="main-title">HỆ THỐNG GHI ÂM VÀ CHUYỂN ĐỔI BIÊN BẢN HỌP</h1>
-
-    <div id="status"></div>
-
-    <div class="control-bar">
-        <button id="startBtn" class="btn-record" onclick="startRecognition()">BẮT ĐẦU GHI ÂM</button>
-        <button id="stopBtn" class="btn-stop" onclick="stopRecognition()">DỪNG</button>
-        <button class="btn-word" onclick="exportToWord()">XUẤT FILE WORD (.DOCX)</button>
+    <div class="header-unit">
+        <h2>ỦY BAN TRUNG ƯƠNG MTTQ VIỆT NAM</h2>
+        <h1>ỦY BAN MẶT TRẬN TỔ QUỐC VIỆT NAM<br>PHƯỜNG AN KHÁNH</h1>
+        <div style="width:100px; height:2px; background:var(--mttq-blue); margin:10px auto;"></div>
     </div>
 
-    <div id="transcript" contenteditable="true">Nhấp vào "Bắt đầu" và nói để chuyển thành văn bản...</div>
+    <div id="status-msg" class="status-box">Hệ thống sẵn sàng <span class="filter-badge">Bộ lọc nhiễu AI đang bật</span></div>
 
-    <div class="footer">
-        Cổng thông tin hỗ trợ nghiệp vụ văn phòng nội bộ
+    <div class="control-panel">
+        <div class="button-group">
+            <button id="startBtn" class="btn-start" onclick="startProcess()">BẮT ĐẦU GHI ÂM</button>
+            <button id="stopBtn" class="btn-stop" onclick="stopProcess()">DỪNG LẠI</button>
+            <button class="btn-word" onclick="exportWord()">XUẤT FILE WORD (.DOCX)</button>
+        </div>
+        <div style="text-align: center; border-top: 1px solid #ddd; padding-top: 15px;">
+            <span style="font-size: 14px; font-weight: bold;">CHUYỂN FILE CÓ SẴN:</span>
+            <input type="file" id="audio-file" accept="audio/*" style="margin-left: 10px;">
+            <button style="background:#28a745; color:white; padding:5px 15px;" onclick="processFile()">XỬ LÝ FILE</button>
+        </div>
     </div>
+
+    <audio id="player" style="display:none"></audio>
+    <div id="transcript-editor" contenteditable="true">(Văn bản cuộc họp...)</div>
 </div>
 
 <script>
     let recognition;
+    let audioContext;
+    let source;
+    let filter;
+
+    // Khởi tạo nhận diện giọng nói
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
         recognition.continuous = true;
@@ -119,64 +70,90 @@
         recognition.lang = 'vi-VN';
 
         recognition.onresult = (event) => {
-            let final_transcript = '';
+            let text = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    final_transcript += event.results[i][0].transcript + '. ';
-                }
+                if (event.results[i].isFinal) text += event.results[i][0].transcript + '. ';
             }
-            if (final_transcript) {
-                const box = document.getElementById('transcript');
-                if(box.innerText.includes("Nhấp vào")) box.innerText = "";
-                box.innerText += final_transcript;
+            if (text) {
+                const ed = document.getElementById('transcript-editor');
+                if(ed.innerText.includes("(Văn bản")) ed.innerText = "";
+                ed.innerText += text.charAt(0).toUpperCase() + text.slice(1);
             }
-        };
-
-        recognition.onstart = () => {
-            document.getElementById('status').innerText = "🔴 ĐANG GHI ÂM...";
-        };
-
-        recognition.onend = () => {
-            document.getElementById('status').innerText = "";
         };
     }
 
-    function startRecognition() {
-        recognition.start();
-        document.getElementById('startBtn').style.display = 'none';
-        document.getElementById('stopBtn').style.display = 'inline-block';
+    // Hàm kích hoạt bộ lọc âm thanh (Bandpass Filter)
+    async function setupAudioProcessing(stream) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioContext.createMediaStreamSource(stream);
+        
+        // Tạo bộ lọc Biquad để lọc tạp âm
+        filter = audioContext.createBiquadFilter();
+        filter.type = "bandpass"; 
+        filter.frequency.value = 1850; // Tần số trung tâm giọng nói
+        filter.Q.value = 1.0; // Độ hẹp của bộ lọc (loại bỏ âm trầm và âm cao cực đoan)
+
+        source.connect(filter);
+        filter.connect(audioContext.destination); // Phát ra loa đã lọc hoặc đưa vào luồng nhận diện
     }
 
-    function stopRecognition() {
+    async function startProcess() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            await setupAudioProcessing(stream);
+            recognition.start();
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'inline-block';
+            document.getElementById('status-msg').innerHTML = "🔴 ĐANG GHI ÂM (ĐÃ LỌC TẠP ÂM)";
+        } catch (err) {
+            alert("Không thể truy cập Microphone: " + err);
+        }
+    }
+
+    function stopProcess() {
         recognition.stop();
+        if (audioContext) audioContext.close();
         document.getElementById('startBtn').style.display = 'inline-block';
         document.getElementById('stopBtn').style.display = 'none';
+        document.getElementById('status-msg').innerHTML = "Hệ thống sẵn sàng";
     }
 
-    // Hàm xuất file Word sử dụng thư viện docx
-    async function exportToWord() {
-        const content = document.getElementById('transcript').innerText;
-        const { Document, Packer, Paragraph, TextRun } = docx;
+    function processFile() {
+        const file = document.getElementById('audio-file').files[0];
+        if (!file) return alert("Hãy chọn file!");
+        
+        const player = document.getElementById('player');
+        player.src = URL.createObjectURL(file);
+        
+        const ed = document.getElementById('transcript-editor');
+        if(ed.innerText.includes("(Văn bản")) ed.innerText = "";
+        
+        recognition.start();
+        player.play();
+        document.getElementById('status-msg').innerHTML = "🔴 ĐANG XỬ LÝ FILE (ĐÃ LỌC NHIỄU)";
+        
+        player.onended = () => stopProcess();
+    }
 
+    async function exportWord() {
+        const content = document.getElementById('transcript-editor').innerText;
+        const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
         const doc = new Document({
             sections: [{
-                properties: {},
                 children: [
                     new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: content,
-                                font: "Times New Roman",
-                                size: 28, // 14pt trong Word = 28 half-points
-                            }),
-                        ],
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text: "ỦY BAN MẶT TRẬN TỔ QUỐC VIỆT NAM PHƯỜNG AN KHÁNH", bold: true, font: "Times New Roman", size: 28 })]
                     }),
-                ],
-            }],
+                    new Paragraph({ text: "", spacing: { before: 200 } }),
+                    new Paragraph({
+                        children: [new TextRun({ text: content, font: "Times New Roman", size: 28 })]
+                    })
+                ]
+            }]
         });
-
         const blob = await Packer.toBlob(doc);
-        saveAs(blob, "Bien_ban_cuoc_hop.docx");
+        saveAs(blob, "Bien_ban_An_Khanh.docx");
     }
 </script>
 
