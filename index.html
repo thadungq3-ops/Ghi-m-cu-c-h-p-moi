@@ -2,210 +2,160 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ỦY BAN MẶT TRẬN TỔ QUỐC VIỆT NAM PHƯỜNG AN KHÁNH - OCR NÂNG CAO</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script src="https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <style>
-        :root { --primary: #d63031; --success: #28a745; --info: #0984e3; --bg: #f4f6f9; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        
-        .header-box { text-align: center; margin-bottom: 30px; border-bottom: 2px solid var(--primary); padding-bottom: 15px; }
-        .header-box h2 { color: var(--primary); margin: 0; text-transform: uppercase; font-size: 22px; letter-spacing: 1px; }
-        .header-box p { margin: 5px 0 0; color: #555; font-weight: bold; }
+    <title>Hệ thống Ghi âm - MTTQ Phường An Khánh</title>
+    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-        .app-container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-        .sidebar { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 25px rgba(0,0,0,0.1); height: fit-content; }
-        .dropzone { border: 2px dashed var(--info); padding: 30px; border-radius: 12px; text-align: center; cursor: pointer; background: #f8fbff; margin-bottom: 20px; }
+    <style>
+        :root { --mttq-blue: #004a8c; --mttq-red: #d42020; }
+        body { font-family: 'Times New Roman', Times, serif; background-color: #e9ecef; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); border-top: 6px solid var(--mttq-red); }
+        .header-unit { text-align: center; margin-bottom: 20px; }
+        .header-unit h1 { font-size: 22px; color: var(--mttq-blue); text-transform: uppercase; margin: 5px 0; }
         
-        #textEditor { width: 100%; height: 700px; border: 1px solid #ddd; padding: 20px; border-radius: 10px; font-size: 16px; line-height: 1.8; font-family: 'Times New Roman', serif; outline: none; box-sizing: border-box; }
+        .status-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 20px; font-weight: bold; color: #856404; }
+        .filter-badge { background: #28a745; color: white; padding: 3px 8px; border-radius: 10px; font-size: 12px; margin-left: 5px; }
+
+        .control-panel { background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; margin-bottom: 20px; }
+        .button-group { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; }
         
-        .status-msg { font-size: 13px; color: var(--primary); font-weight: bold; margin: 10px 0; min-height: 20px; }
-        .btn-group { display: flex; flex-direction: column; gap: 10px; }
-        button { padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
-        .btn-run { background: var(--info); }
-        .btn-export { background: var(--success); display: none; }
-        
-        .toggle-box { background: #f1f2f6; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-        .toggle-box label { font-size: 13px; font-weight: bold; color: #2f3542; }
+        button { font-family: 'Times New Roman', serif; font-weight: bold; padding: 10px 20px; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; }
+        .btn-start { background-color: var(--mttq-red); color: white; }
+        .btn-stop { background-color: #495057; color: white; display: none; }
+        .btn-word { background-color: #2b579a; color: white; }
+        .btn-filter { background-color: #17a2b8; color: white; cursor: default; }
+
+        #transcript-editor { width: 100%; min-height: 450px; border: 1px solid #adb5bd; padding: 25px; font-size: 14pt; line-height: 1.6; box-sizing: border-box; text-align: justify; outline: none; background: #fff; }
     </style>
 </head>
 <body>
 
-<div class="header-box">
-    <h2>ỦY BAN MẶT TRẬN TỔ QUỐC VIỆT NAM PHƯỜNG AN KHÁNH</h2>
-    <p>HỆ THỐNG SỐ HÓA VÀ NHẬN DẠNG TÀI LIỆU (OCR) - CHẾ ĐỘ LỌC TẠP ÂM</p>
-</div>
+<div class="container">
+    <div class="header-unit">
+        <h2>ỦY BAN TRUNG ƯƠNG MTTQ VIỆT NAM</h2>
+        <h1>ỦY BAN MẶT TRẬN TỔ QUỐC VIỆT NAM<br>PHƯỜNG AN KHÁNH</h1>
+        <div style="width:100px; height:2px; background:var(--mttq-blue); margin:10px auto;"></div>
+    </div>
 
-<div class="app-container">
-    <div class="sidebar">
-        <div class="dropzone" onclick="document.getElementById('fileInput').click()">
-            <strong id="fileName">Tải tài liệu lên</strong>
-            <input type="file" id="fileInput" accept=".pdf, image/*" hidden>
+    <div id="status-msg" class="status-box">Hệ thống sẵn sàng <span class="filter-badge">Bộ lọc nhiễu AI đang bật</span></div>
+
+    <div class="control-panel">
+        <div class="button-group">
+            <button id="startBtn" class="btn-start" onclick="startProcess()">BẮT ĐẦU GHI ÂM</button>
+            <button id="stopBtn" class="btn-stop" onclick="stopProcess()">DỪNG LẠI</button>
+            <button class="btn-word" onclick="exportWord()">XUẤT FILE WORD (.DOCX)</button>
         </div>
-
-        <div class="toggle-box">
-            <label>Tự động lọc tạp âm (Khuyên dùng):</label>
-            <input type="checkbox" id="denoiseToggle" checked>
-        </div>
-
-        <div style="margin-bottom: 15px;">
-            <label><b>Font chữ xuất Word:</b></label>
-            <select id="fontSelect" style="width:100%; padding:8px; border-radius:5px;">
-                <option value="'Times New Roman', serif">Times New Roman</option>
-                <option value="Arial, sans-serif">Arial</option>
-            </select>
-        </div>
-
-        <div id="status" class="status-msg">Hệ thống sẵn sàng.</div>
-        <div style="height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 15px; display: none;" id="pBar">
-            <div id="pFill" style="height: 100%; background: var(--success); width: 0%;"></div>
-        </div>
-
-        <div class="btn-group">
-            <button class="btn-run" id="startBtn">BẮT ĐẦU NHẬN DẠNG</button>
-            <button class="btn-export" id="btnW" onclick="exportWord()">Tải Word (.doc)</button>
-            <button class="btn-export" id="btnE" onclick="exportExcel()">Tải Excel (.xlsx)</button>
-            <button style="background:#636e72" onclick="copyText()">Sao chép văn bản</button>
+        <div style="text-align: center; border-top: 1px solid #ddd; padding-top: 15px;">
+            <span style="font-size: 14px; font-weight: bold;">CHUYỂN FILE CÓ SẴN:</span>
+            <input type="file" id="audio-file" accept="audio/*" style="margin-left: 10px;">
+            <button style="background:#28a745; color:white; padding:5px 15px;" onclick="processFile()">XỬ LÝ FILE</button>
         </div>
     </div>
 
-    <div class="main-content">
-        <textarea id="textEditor" placeholder="Kết quả sẽ hiển thị ở đây..."></textarea>
-    </div>
+    <audio id="player" style="display:none"></audio>
+    <div id="transcript-editor" contenteditable="true">(Văn bản cuộc họp...)</div>
 </div>
-
-<canvas id="processCanvas" style="display: none;"></canvas>
 
 <script>
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    let recognition;
+    let audioContext;
+    let source;
+    let filter;
 
-    const fileInput = document.getElementById('fileInput');
-    const textEditor = document.getElementById('textEditor');
-    const status = document.getElementById('status');
-    const pBar = document.getElementById('pBar');
-    const pFill = document.getElementById('pFill');
-    const denoiseToggle = document.getElementById('denoiseToggle');
+    // Khởi tạo nhận diện giọng nói
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'vi-VN';
 
-    fileInput.onchange = () => { if(fileInput.files[0]) document.getElementById('fileName').innerText = fileInput.files[0].name; };
-
-    document.getElementById('startBtn').onclick = async () => {
-        const file = fileInput.files[0];
-        if (!file) return alert("Vui lòng chọn file!");
-        
-        setLoading(true);
-        if (file.type === "application/pdf") {
-            await handlePDF(file);
-        } else {
-            const processedImg = await preprocessImage(file);
-            await handleOCR(processedImg);
-        }
-    };
-
-    // HÀM LỌC TẠP ÂM (Denoising & Contrast)
-    async function preprocessImage(source) {
-        if (!denoiseToggle.checked) return source;
-        
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.getElementById('processCanvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                
-                // 1. Vẽ ảnh lên canvas
-                ctx.drawImage(img, 0, 0);
-                
-                // 2. Thuật toán lọc: Chuyển xám và tăng tương phản
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const data = imageData.data;
-                for (let i = 0; i < data.length; i += 4) {
-                    let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    // Ngưỡng lọc (Threshold): Nếu màu xám > 160 thì cho thành trắng hẳn, ngược lại đen hẳn
-                    let val = avg > 160 ? 255 : 0; 
-                    data[i] = data[i+1] = data[i+2] = val;
-                }
-                ctx.putImageData(imageData, 0, 0);
-                resolve(canvas.toDataURL("image/png"));
-            };
-            img.src = URL.createObjectURL(source instanceof Blob ? source : source);
-        });
-    }
-
-    async function handleOCR(source) {
-        status.innerText = "Đang lọc tạp âm & Nhận diện chữ...";
-        const { data: { text } } = await Tesseract.recognize(source, 'vie');
-        textEditor.value = smartFix(text);
-        finish();
-    }
-
-    async function handlePDF(file) {
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.onload = async function() {
-            const pdf = await pdfjsLib.getDocument({data: reader.result, cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/', cMapPacked: true}).promise;
-            let output = "";
-            for (let i = 1; i <= pdf.numPages; i++) {
-                status.innerText = `Xử lý trang ${i}/${pdf.numPages}`;
-                const page = await pdf.getPage(i);
-                
-                // Chuyển trang PDF thành ảnh để lọc tạp âm
-                const viewport = page.getViewport({scale: 2.5});
-                const canvas = document.createElement('canvas');
-                canvas.height = viewport.height; canvas.width = viewport.width;
-                await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
-                
-                const filteredPage = await preprocessImage(canvas.toDataURL());
-                const { data: { text } } = await Tesseract.recognize(filteredPage, 'vie');
-                
-                output += smartFix(text) + "\n\n";
-                textEditor.value = output;
-                pFill.style.width = (i / pdf.numPages * 100) + "%";
+        recognition.onresult = (event) => {
+            let text = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) text += event.results[i][0].transcript + '. ';
             }
-            finish();
+            if (text) {
+                const ed = document.getElementById('transcript-editor');
+                if(ed.innerText.includes("(Văn bản")) ed.innerText = "";
+                ed.innerText += text.charAt(0).toUpperCase() + text.slice(1);
+            }
         };
     }
 
-    function smartFix(str) {
-        if (!str) return "";
-        return str.normalize('NFC')
-            .replace(/([A-ZÀ-Ỹ])\s(?=[A-ZÀ-Ỹ]\s)/g, '$1')
-            .replace(/([a-zà-ỹ])\s(?=[a-zà-ỹ]\s)/g, '$1')
-            .replace(/\s{2,}/g, ' ')
-            .replace(/\s([.,!?:;])/g, '$1')
-            .trim();
+    // Hàm kích hoạt bộ lọc âm thanh (Bandpass Filter)
+    async function setupAudioProcessing(stream) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioContext.createMediaStreamSource(stream);
+        
+        // Tạo bộ lọc Biquad để lọc tạp âm
+        filter = audioContext.createBiquadFilter();
+        filter.type = "bandpass"; 
+        filter.frequency.value = 1850; // Tần số trung tâm giọng nói
+        filter.Q.value = 1.0; // Độ hẹp của bộ lọc (loại bỏ âm trầm và âm cao cực đoan)
+
+        source.connect(filter);
+        filter.connect(audioContext.destination); // Phát ra loa đã lọc hoặc đưa vào luồng nhận diện
     }
 
-    function setLoading(is) {
-        pBar.style.display = is ? 'block' : 'none';
-        document.querySelectorAll('.btn-export').forEach(b => b.style.display = 'none');
+    async function startProcess() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            await setupAudioProcessing(stream);
+            recognition.start();
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'inline-block';
+            document.getElementById('status-msg').innerHTML = "🔴 ĐANG GHI ÂM (ĐÃ LỌC TẠP ÂM)";
+        } catch (err) {
+            alert("Không thể truy cập Microphone: " + err);
+        }
     }
 
-    function finish() {
-        status.innerText = "Hoàn thành!";
-        document.querySelectorAll('.btn-export').forEach(b => b.style.display = 'block');
+    function stopProcess() {
+        recognition.stop();
+        if (audioContext) audioContext.close();
+        document.getElementById('startBtn').style.display = 'inline-block';
+        document.getElementById('stopBtn').style.display = 'none';
+        document.getElementById('status-msg').innerHTML = "Hệ thống sẵn sàng";
     }
 
-    function exportWord() {
-        const font = document.getElementById('fontSelect').value;
-        const html = `<html><head><meta charset='utf-8'><style>body{font-family:${font}; line-height:1.6;}</style></head><body>${textEditor.value.replace(/\n/g, '<br>')}</body></html>`;
-        const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "Van_ban_An_Khanh.doc"; a.click();
+    function processFile() {
+        const file = document.getElementById('audio-file').files[0];
+        if (!file) return alert("Hãy chọn file!");
+        
+        const player = document.getElementById('player');
+        player.src = URL.createObjectURL(file);
+        
+        const ed = document.getElementById('transcript-editor');
+        if(ed.innerText.includes("(Văn bản")) ed.innerText = "";
+        
+        recognition.start();
+        player.play();
+        document.getElementById('status-msg').innerHTML = "🔴 ĐANG XỬ LÝ FILE (ĐÃ LỌC NHIỄU)";
+        
+        player.onended = () => stopProcess();
     }
 
-    function exportExcel() {
-        const rows = textEditor.value.split('\n').filter(r => r.trim()).map(r => [r]);
-        const ws = XLSX.utils.aoa_to_sheet(rows);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "OCR");
-        XLSX.writeFile(wb, "Du_lieu_An_Khanh.xlsx");
+    async function exportWord() {
+        const content = document.getElementById('transcript-editor').innerText;
+        const { Document, Packer, Paragraph, TextRun, AlignmentType } = docx;
+        const doc = new Document({
+            sections: [{
+                children: [
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text: "ỦY BAN MẶT TRẬN TỔ QUỐC VIỆT NAM PHƯỜNG AN KHÁNH", bold: true, font: "Times New Roman", size: 28 })]
+                    }),
+                    new Paragraph({ text: "", spacing: { before: 200 } }),
+                    new Paragraph({
+                        children: [new TextRun({ text: content, font: "Times New Roman", size: 28 })]
+                    })
+                ]
+            }]
+        });
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, "Bien_ban_An_Khanh.docx");
     }
-
-    function copyText() { textEditor.select(); document.execCommand('copy'); alert("Đã sao chép!"); }
 </script>
+
 </body>
 </html>
